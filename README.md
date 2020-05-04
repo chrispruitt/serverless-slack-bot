@@ -82,6 +82,8 @@ Add your slack bot to a channel.
 
 Then, execute a script via slack by mentioning your slack bot followed by a scripts command.
 
+`@YourBot help` is a built in script that will list all your commands using the Description and CommandDescription fields.
+
 
 
 **Roadmap**
