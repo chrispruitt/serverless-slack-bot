@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/chrispruitt/ssbot/bot"
+	"github.com/chrispruitt/serverless-slack-bot/bot"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"

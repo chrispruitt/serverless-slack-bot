@@ -21,7 +21,7 @@ main.go example
 package main
 
 import (
-	"github.com/chrispruitt/ssbot/bot"
+	"github.com/chrispruitt/serverless-slack-bot/bot"
 
 	_ "<yourModuleName>/scripts"
 )
@@ -40,7 +40,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/chrispruitt/ssbot/bot"
+	"github.com/chrispruitt/serverless-slack-bot/bot"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -82,6 +82,8 @@ Add your slack bot to a channel.
 
 Then, execute a script via slack by mentioning your slack bot followed by a scripts command.
 
+`@YourBot help` is a built in script that will list all your commands using the Description and CommandDescription fields.
+
 
 
 **Roadmap**
@@ -89,4 +91,4 @@ Then, execute a script via slack by mentioning your slack bot followed by a scri
 - Provide terraform module for quick setup of lambda and api-gateway
 - Update readme with a "how to" to set up slack bot or publish one
 - Add script authorization via roles
-- Give ssbot a brain via dynamodb or s3 json file
+- Give serverless-slack-bot a brain via dynamodb or s3 json file

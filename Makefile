@@ -1,4 +1,4 @@
-NAME=ssbot
+NAME=serverless-slack-bot
 FUNCTION_NAME=bot
 VERSION=latest
 DATE=`date +"%Y%m%d_%H%M%S"`
