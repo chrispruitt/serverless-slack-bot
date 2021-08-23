@@ -19,21 +19,15 @@ import (
 var ginLambda *ginadapter.GinLambda
 var r *gin.Engine
 
-func init() {
-	// stdout and stderr are sent to AWS CloudWatch Logs
-	log.Printf("Gin cold start")
-	r = gin.Default()
-
-	r.POST("/slack-event", SlackEventHandler)
-
-	ginLambda = ginadapter.New(r)
-}
-
 func SlackEventHandler(c *gin.Context) {
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(c.Request.Body)
 	body := buf.String()
+
+	fmt.Println("Attempting to verify")
+	fmt.Println(json.RawMessage(body))
+	fmt.Println("Attempting to verify")
 
 	// Verify the request came from slack
 	eventsAPIEvent, e := slackevents.ParseEvent(json.RawMessage(body), slackevents.OptionVerifyToken(&slackevents.TokenComparator{VerificationToken: os.Getenv("SLACK_VERIFICATION_TOKEN")}))
@@ -132,6 +126,14 @@ func (handler CustomHandle) Invoke(ctx context.Context, payload []byte) ([]byte,
 }
 
 func Start() {
+	// stdout and stderr are sent to AWS CloudWatch Logs
+	log.Printf("Gin cold start")
+	r = gin.Default()
+
+	r.POST("/slack-event", SlackEventHandler)
+
+	ginLambda = ginadapter.New(r)
+
 	if os.Getenv("_LAMBDA_SERVER_PORT") != "" {
 		handle := new(CustomHandle)
 		lambda.StartHandler(handle)

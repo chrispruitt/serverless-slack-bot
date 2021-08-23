@@ -7,7 +7,7 @@ This is a simple hubot like slack bot with serverless in mind. In short it is an
 **Setup**
 
 1. Create your slack app and get your bot tokens
-2. Create a main.go file and scripts/ folder
+2. Create a main.go file and scripts/ folder with the below example files
 3. Setup lambda function with whatever permissions required by your custom scripts
 4. Setup API Gateway with a endpoint `/{proxy+}` pointing to your lambda function
 5. Deploy your code to your lambda function
@@ -21,13 +21,19 @@ main.go example
 package main
 
 import (
-	"github.com/chrispruitt/serverless-slack-bot/bot"
+	"os"
 
+	"github.com/chrispruitt/serverless-slack-bot/bot"
 	_ "<yourModuleName>/scripts"
 )
 
 func main() {
-	bot.Start()
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "shell" {
+		bot.Shell()
+	} else {
+		bot.Start()
+	}
 }
 ```
 
@@ -42,11 +48,21 @@ import (
 
 	"github.com/chrispruitt/serverless-slack-bot/bot"
 
-	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
 func init() {
+	bot.RegisterScript(bot.Script{
+		Name:               "lulz",
+		Matcher:            "(?i)^lulz$",
+		Description:        "lulz",
+		CommandDescription: "lulz",
+		Function: func(event *slackevents.AppMentionEvent) {
+
+			bot.PostMessage(event.Channel, "lol")
+		},
+	})
+
 	bot.RegisterScript(bot.Script{
 		Name:               "Echo",
 		Matcher:            "(?i)^echo.*",
@@ -56,7 +72,7 @@ func init() {
 			re := regexp.MustCompile(`echo *`)
 			text := re.ReplaceAllString(event.Text, "")
 
-			bot.SlackClient.PostMessage(event.Channel, slack.MsgOptionText(fmt.Sprintf("You said, \"%s\"", text), false))
+			bot.PostMessage(event.Channel, fmt.Sprintf("You said, \"%s\"", text))
 		},
 	})
 }
@@ -74,7 +90,9 @@ export SLACK_VERIFICATION_TOKEN=yourslackapiverificationtoken
 go run main.go
 ```
 
+**Interactive shell for testing mention events**
 
+[![asciicast](https://asciinema.org/a/431805.svg)](https://asciinema.org/a/431805)
 
 **In Slack**
 

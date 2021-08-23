@@ -1,11 +1,17 @@
 package main
 
 import (
-	"github.com/chrispruitt/serverless-slack-bot/bot"
+	"os"
 
+	"github.com/chrispruitt/serverless-slack-bot/bot"
 	_ "github.com/chrispruitt/serverless-slack-bot/scripts"
 )
 
 func main() {
-	bot.Start()
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "shell" {
+		bot.Shell()
+	} else {
+		bot.Start()
+	}
 }

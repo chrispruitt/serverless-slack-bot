@@ -4,6 +4,7 @@ VERSION=latest
 DATE=`date +"%Y%m%d_%H%M%S"`
 TEST_JSON='{"name": "My Poll"}'
 STEP_FUNCTION_JSON='{"name": "My Step Execution Poll"}'
+STATE_MACHINE_ARN=
 
 clean:
 	rm -rf dist
@@ -24,6 +25,11 @@ invoke:
 
 invokeStepFunctionExecution:
 	aws stepfunctions start-execution \
-		--state-machine-arn arn:aws:states:us-east-1:770171891064:stateMachine:TriggerLambdaBot \
+		--state-machine-arn ${STATE_MACHINE_ARN} \
 		--input $(STEP_FUNCTION_JSON)
 
+shell:
+	go run main.go shell
+
+run:
+	go run main.go

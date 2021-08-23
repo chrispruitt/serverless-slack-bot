@@ -52,8 +52,16 @@ func HandleMentionEvent(event *slackevents.AppMentionEvent) {
 		}
 	}
 
-	SlackClient.PostMessage(event.Channel, slack.MsgOptionText("Sorry, I don't know that command.", false))
+	PostMessage(event.Channel, "Sorry, I don't know that command.")
+}
 
+func PostMessage(channelID string, message string) (string, string, error) {
+	if shellMode {
+		fmt.Println(message)
+		return "", "", nil
+	} else {
+		return SlackClient.PostMessage(channelID, slack.MsgOptionText(message, false))
+	}
 }
 
 func match(matcher string, content string) bool {
@@ -62,13 +70,13 @@ func match(matcher string, content string) bool {
 }
 
 func helpScriptFunc(event *slackevents.AppMentionEvent) {
-	helpMsg := "Prefix @bo to any command you would like to execute. \n\n"
+	helpMsg := "Prefix @<yourBotUser> to any command you would like to execute. \n\n"
 	for i, script := range scripts {
 		if i != 0 {
 			helpMsg += "\n"
 		}
 		if script.CommandDescription != "" {
-			helpMsg += "@bo " + script.CommandDescription
+			helpMsg += "@slackbot " + script.CommandDescription
 			if script.Description != "" {
 				helpMsg += fmt.Sprintf(" - %s", script.Description)
 			}
@@ -76,5 +84,5 @@ func helpScriptFunc(event *slackevents.AppMentionEvent) {
 			helpMsg += fmt.Sprintf("Missing help command description for %s", script.Name)
 		}
 	}
-	SlackClient.PostMessage(event.Channel, slack.MsgOptionText(fmt.Sprintf("```%s```", helpMsg), false))
+	PostMessage(event.Channel, fmt.Sprintf("```%s```", helpMsg))
 }

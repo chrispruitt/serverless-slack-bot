@@ -6,7 +6,6 @@ import (
 
 	"github.com/chrispruitt/serverless-slack-bot/bot"
 
-	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
@@ -18,7 +17,7 @@ func init() {
 		CommandDescription: "lulz",
 		Function: func(event *slackevents.AppMentionEvent) {
 
-			bot.SlackClient.PostMessage(event.Channel, slack.MsgOptionText(fmt.Sprintf("lol"), false))
+			bot.PostMessage(event.Channel, "lol")
 		},
 	})
 
@@ -31,7 +30,7 @@ func init() {
 			re := regexp.MustCompile(`echo *`)
 			text := re.ReplaceAllString(event.Text, "")
 
-			bot.SlackClient.PostMessage(event.Channel, slack.MsgOptionText(fmt.Sprintf("You said, \"%s\"", text), false))
+			bot.PostMessage(event.Channel, fmt.Sprintf("You said, \"%s\"", text))
 		},
 	})
 }
