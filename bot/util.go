@@ -1,6 +1,9 @@
 package bot
 
-import "os"
+import (
+	"os"
+	"regexp"
+)
 
 func getenv(key, fallback string) string {
 	value := os.Getenv(key)
@@ -8,4 +11,9 @@ func getenv(key, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func stripBotName(text string) string {
+	re := regexp.MustCompile(`^<@.*> *`)
+	return re.ReplaceAllString(text, "")
 }

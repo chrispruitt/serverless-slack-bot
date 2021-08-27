@@ -53,26 +53,21 @@ import (
 
 func init() {
 	bot.RegisterScript(bot.Script{
-		Name:               "lulz",
-		Matcher:            "(?i)^lulz$",
-		Description:        "lulz",
-		CommandDescription: "lulz",
-		Function: func(event *slackevents.AppMentionEvent) {
-
-			bot.PostMessage(event.Channel, "lol")
+		Name:        "lulz",
+		Matcher:     "lulz",
+		Description: "lulz",
+		Function: func(context *bot.EventContext) {
+			bot.PostMessage(context.SlackEvent.Channel, "lol")
 		},
 	})
 
 	bot.RegisterScript(bot.Script{
-		Name:               "Echo",
-		Matcher:            "(?i)^echo.*",
-		Description:        "Echo a message",
-		CommandDescription: "echo <message>",
-		Function: func(event *slackevents.AppMentionEvent) {
-			re := regexp.MustCompile(`echo *`)
-			text := re.ReplaceAllString(event.Text, "")
-
-			bot.PostMessage(event.Channel, fmt.Sprintf("You said, \"%s\"", text))
+		Name:        "Echo",
+		Matcher:     "echo <message>",
+		Description: "Echo a message",
+		Function: func(context *bot.EventContext) {
+			message := context.Arguments["message"]
+			bot.PostMessage(context.SlackEvent.Channel, fmt.Sprintf("You said, \"%s\"", message))
 		},
 	})
 }
@@ -100,7 +95,7 @@ Add your slack bot to a channel.
 
 Then, execute a script via slack by mentioning your slack bot followed by a scripts command.
 
-`@YourBot help` is a built in script that will list all your commands using the Description and CommandDescription fields.
+`@YourBot help` is a built in script that will list all your commands using the Description and Matcher fields.
 
 
 

@@ -2,35 +2,47 @@ package scripts
 
 import (
 	"fmt"
-	"regexp"
+	"strings"
 
 	"github.com/chrispruitt/serverless-slack-bot/bot"
-
-	"github.com/slack-go/slack/slackevents"
 )
 
 func init() {
+	// Simple script
 	bot.RegisterScript(bot.Script{
-		Name:               "lulz",
-		Matcher:            "(?i)^lulz$",
-		Description:        "lulz",
-		CommandDescription: "lulz",
-		Function: func(event *slackevents.AppMentionEvent) {
-
-			bot.PostMessage(event.Channel, "lol")
+		Name:        "lulz",
+		Matcher:     "lulz",
+		Description: "lulz",
+		Function: func(context *bot.EventContext) {
+			bot.PostMessage(context.SlackEvent.Channel, "lol")
 		},
 	})
 
+	// Script with parameters
 	bot.RegisterScript(bot.Script{
-		Name:               "Echo",
-		Matcher:            "(?i)^echo.*",
-		Description:        "Echo a message",
-		CommandDescription: "echo <message>",
-		Function: func(event *slackevents.AppMentionEvent) {
-			re := regexp.MustCompile(`echo *`)
-			text := re.ReplaceAllString(event.Text, "")
+		Name:        "echo",
+		Matcher:     "echo <message>",
+		Description: "Echo a message",
+		Function: func(context *bot.EventContext) {
+			message := context.Arguments["message"]
+			bot.PostMessage(context.SlackEvent.Channel, fmt.Sprintf("You said, \"%s\"", message))
+		},
+	})
 
-			bot.PostMessage(event.Channel, fmt.Sprintf("You said, \"%s\"", text))
+	// Script with some custom parameter syntax
+	bot.RegisterScript(bot.Script{
+		Name:        "ship",
+		Matcher:     `ship <app> to <env>`,
+		Description: "Usage: 'ship app1@v1.0.0 to dev' or 'ship app1@v1.0.0 app2@v1.0.0 to dev",
+		Function: func(context *bot.EventContext) {
+			// TODO Validation
+			env := context.Arguments["env"]
+			apps := strings.Split(context.Arguments["app"], " ")
+
+			for _, a := range apps {
+				app := strings.Split(a, "@")
+				bot.PostMessage(context.SlackEvent.Channel, fmt.Sprintf("Shipping App: %s Version: %s to %s", app[0], app[1], env))
+			}
 		},
 	})
 }

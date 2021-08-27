@@ -28,10 +28,13 @@ func Shell() {
 	for {
 		fmt.Print("slackbot> ")
 		cmdString, err := reader.ReadString('\n')
+
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		err = runCommand(cmdString)
+		if strings.TrimSpace(cmdString) != "" {
+			err = runCommand(cmdString)
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
@@ -48,7 +51,7 @@ func Banner() {
 func runCommand(commandStr string) error {
 	commandStr = strings.TrimSuffix(commandStr, "\n")
 	arrCommandStr := strings.Fields(commandStr)
-	switch arrCommandStr[0] {
+	switch strings.TrimSpace(arrCommandStr[0]) {
 	case "exit":
 		os.Exit(0)
 	default:
