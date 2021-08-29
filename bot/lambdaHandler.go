@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -16,10 +17,14 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-var ginLambda *ginadapter.GinLambda
+var ginLambda *ginadapter.GinLambdaV2
 var r *gin.Engine
 
-func SlackEventHandler(c *gin.Context) {
+func StatusRoute(c *gin.Context) {
+	c.JSON(200, "ok")
+}
+
+func SlackEventRoute(c *gin.Context) {
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(c.Request.Body)
@@ -60,11 +65,21 @@ func SlackEventHandler(c *gin.Context) {
 	c.JSON(200, "OK")
 }
 
-func apiGatewayProxyRequestHandler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func stripApiGatewayStageName(req events.APIGatewayV2HTTPRequest) events.APIGatewayV2HTTPRequest {
+	request := req
+	request.RawPath = strings.Replace(request.RawPath, fmt.Sprintf("/%s", request.RequestContext.Stage), "", 1)
+	request.RequestContext.HTTP.Path = strings.Replace(request.RequestContext.HTTP.Path, fmt.Sprintf("/%s", request.RequestContext.Stage), "", 1)
+	return request
+}
+
+func apiGatewayProxyRequestHandler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	_, err := json.Marshal(req)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Stip stage if exists from path
+	req = stripApiGatewayStageName(req)
 
 	return ginLambda.ProxyWithContext(ctx, req)
 }
@@ -88,13 +103,13 @@ func (handler CustomHandle) Invoke(ctx context.Context, payload []byte) ([]byte,
 	fmt.Println("RAW REQUEST")
 	fmt.Println(string(payload[:]))
 
-	var apiGatewayProxyRequest events.APIGatewayProxyRequest
-	json.Unmarshal(payload, &apiGatewayProxyRequest)
+	var request events.APIGatewayV2HTTPRequest
+	json.Unmarshal(payload, &request)
 
-	// Check if event was actually an API Gateway Event by checking if HTTPMethod exists
-	if apiGatewayProxyRequest.HTTPMethod != "" {
+	// Check if event was actually an API Gateway Event by checking if RawPath exists
+	if request.RawPath != "" {
 		fmt.Println("Received an API Gateway Proxy Event.")
-		response, err := apiGatewayProxyRequestHandler(ctx, apiGatewayProxyRequest)
+		response, err := apiGatewayProxyRequestHandler(ctx, request)
 		if err != nil {
 			return nil, err
 		}
@@ -130,9 +145,10 @@ func Start() {
 	log.Printf("Gin cold start")
 	r = gin.Default()
 
-	r.POST("/slack-event", SlackEventHandler)
+	r.POST("/slack-event", SlackEventRoute)
+	r.GET("/status", StatusRoute)
 
-	ginLambda = ginadapter.New(r)
+	ginLambda = ginadapter.NewV2(r)
 
 	if os.Getenv("_LAMBDA_SERVER_PORT") != "" {
 		handle := new(CustomHandle)
